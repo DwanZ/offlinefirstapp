@@ -1,0 +1,35 @@
+[
+  {
+    "id": "tx_1",
+    "accountId": "acc_operating",
+    "amountCents": -45000,
+    "categoryId": "cat_ops",
+    "note": "Office supplies",
+    "bookedAtEpochMs": 1727810000000,
+    "remoteId": "remote_tx_1",
+    "clientMutationId": "seed_1",
+    "updatedAtEpochMs": 1727810000000
+  },
+  {
+    "id": "tx_2",
+    "accountId": "acc_operating",
+    "amountCents": 320000,
+    "categoryId": "cat_revenue",
+    "note": "Client invoice #1042",
+    "bookedAtEpochMs": 1727720000000,
+    "remoteId": "remote_tx_2",
+    "clientMutationId": "seed_2",
+    "updatedAtEpochMs": 1727720000000
+  },
+  {
+    "id": "tx_3",
+    "accountId": "acc_savings",
+    "amountCents": 100000,
+    "categoryId": "cat_transfer",
+    "note": "Monthly reserve",
+    "bookedAtEpochMs": 1727630000000,
+    "remoteId": "remote_tx_3",
+    "clientMutationId": "seed_3",
+    "updatedAtEpochMs": 1727630000000
+  }
+]

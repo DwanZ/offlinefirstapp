@@ -22,6 +22,17 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "offline first app"
+rootProject.name = "offlinefirstapp"
+
 include(":app")
- 
+include(":core:common")
+include(":core:domain")
+include(":core:database")
+include(":core:network")
+include(":core:data")
+include(":core:sync")
+include(":core:designsystem")
+include(":feature:home")
+include(":feature:accounts")
+include(":feature:transactions")
+include(":feature:sync")

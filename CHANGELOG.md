@@ -7,12 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-10-03
+
 ### Added
-- (upcoming) Multi-module Clean Architecture skeleton
-- (upcoming) Design system brand tokens
-- (upcoming) Room outbox + WorkManager sync
-- (upcoming) Financial dashboard screens
-- (upcoming) Unit tests + GitHub Actions CI
+- Unit tests for `AddTransactionUseCase` and `HomeViewModel` (MockK + Turbine)
+- GitHub Actions workflow `pr-checks.yml` (lint, unit tests, assembleDebug)
+
+## [0.5.0] - 2026-10-03
+
+### Added
+- Feature modules: Home, Accounts, Transactions, Sync health
+- Bottom navigation + UDF `StateFlow<UiState>` ViewModels
+- Offline add-transaction sheet with outbox-backed save
+
+## [0.4.0] - 2026-10-03
+
+### Added
+- Room SSOT schema (accounts, transactions, budgets, sync_outbox, sync_meta)
+- Retrofit mock API with latency and intermittent 500s
+- Outbox write path + WorkManager `SyncWorker` (LWW by `updatedAt`)
+
+## [0.3.0] - 2026-10-03
+
+### Added
+- `:core:designsystem` brand tokens (Emerald / Indigo / Cyan on Slate)
+- Dark-first Material 3 theme + financial semantic colors
+- Shared `MoneyText`, `MetricCard`, `SyncStatusChip`
+
+## [0.2.0] - 2026-10-03
+
+### Added
+- Multi-module Clean Architecture skeleton (`:core:*`, `:feature:*`)
+- Domain models, repository ports, use cases
+- Hilt DI wiring in `:app`
 
 ## [0.1.0] - 2026-10-03
 

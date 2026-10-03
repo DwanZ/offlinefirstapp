@@ -14,9 +14,24 @@ Public portfolio app by [DwanZ](https://github.com/DwanZ): a **financial dashboa
 
 ## Current version
 
-**v0.1.0** — Compose scaffold bootstrap. See [CHANGELOG.md](CHANGELOG.md) for the versioned history.
+**v0.6.0** — See [CHANGELOG.md](CHANGELOG.md) for the versioned history.
 
-## Stack (target)
+## Module map
+
+```
+:app
+:core:common | domain | database | network | data | sync | designsystem
+:feature:home | accounts | transactions | sync
+```
+
+## Offline-first sync
+
+1. UI reads **only** from Room (`Flow`).
+2. Mutations write Room + `sync_outbox` in one `@Transaction`.
+3. WorkManager drains the outbox against a mock Retrofit API.
+4. Pull upserts use last-write-wins by `updatedAt`.
+
+## Stack
 
 | Layer | Tech |
 |---|---|
@@ -34,8 +49,12 @@ git clone https://github.com/DwanZ/offlinefirstapp.git
 cd offlinefirstapp
 ```
 
-Open in Android Studio, sync Gradle, run the `app` configuration.
+Open in Android Studio (Gradle JDK 17+ recommended), sync Gradle, run the `app` configuration.
+
+```bash
+./gradlew :core:domain:test :feature:home:testDebugUnitTest assembleDebug
+```
 
 ## License
 
-Apache-2.0 (to be added with later milestones if required).
+Apache-2.0 (optional; add LICENSE when publishing releases).

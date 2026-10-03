@@ -1,0 +1,26 @@
+[
+  {
+    "id": "acc_operating",
+    "name": "Operating Account",
+    "type": "CHECKING",
+    "currency": "USD",
+    "balanceCents": 1250000,
+    "updatedAtEpochMs": 1727900000000
+  },
+  {
+    "id": "acc_savings",
+    "name": "Reserve Savings",
+    "type": "SAVINGS",
+    "currency": "USD",
+    "balanceCents": 4800000,
+    "updatedAtEpochMs": 1727900000000
+  },
+  {
+    "id": "acc_petty",
+    "name": "Petty Cash",
+    "type": "CASH",
+    "currency": "USD",
+    "balanceCents": 35000,
+    "updatedAtEpochMs": 1727900000000
+  }
+]
