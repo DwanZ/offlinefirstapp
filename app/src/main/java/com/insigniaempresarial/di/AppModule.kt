@@ -2,6 +2,7 @@ package com.insigniaempresarial.di
 
 import android.content.Context
 import androidx.room.Room
+import com.insigniaempresarial.core.common.ConnectivityObserver
 import com.insigniaempresarial.core.common.DefaultDispatcherProvider
 import com.insigniaempresarial.core.common.DispatcherProvider
 import com.insigniaempresarial.core.data.repository.AccountRepositoryImpl
@@ -25,6 +26,8 @@ import com.insigniaempresarial.core.domain.usecase.TransferBetweenAccountsUseCas
 import com.insigniaempresarial.core.domain.usecase.TriggerSyncUseCase
 import com.insigniaempresarial.core.network.NetworkFactory
 import com.insigniaempresarial.core.network.api.InsigniaApi
+import com.insigniaempresarial.core.sync.AndroidConnectivityObserver
+import com.insigniaempresarial.core.sync.ConnectivitySyncTrigger
 import com.insigniaempresarial.core.sync.WorkManagerSyncScheduler
 import dagger.Module
 import dagger.Provides
@@ -57,6 +60,18 @@ object AppModule {
     @Singleton
     fun provideSyncScheduler(@ApplicationContext context: Context): SyncScheduler =
         WorkManagerSyncScheduler(context)
+
+    @Provides
+    @Singleton
+    fun provideConnectivityObserver(@ApplicationContext context: Context): ConnectivityObserver =
+        AndroidConnectivityObserver(context)
+
+    @Provides
+    @Singleton
+    fun provideConnectivitySyncTrigger(
+        connectivityObserver: ConnectivityObserver,
+        syncScheduler: SyncScheduler,
+    ): ConnectivitySyncTrigger = ConnectivitySyncTrigger(connectivityObserver, syncScheduler)
 
     @Provides
     @Singleton

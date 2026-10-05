@@ -25,11 +25,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import com.insigniaempresarial.core.designsystem.theme.InsigniaTheme
+import com.insigniaempresarial.feature.accounts.AccountDetailRoute
 import com.insigniaempresarial.feature.accounts.AccountsRoute
 import com.insigniaempresarial.feature.home.HomeRoute
 import com.insigniaempresarial.feature.sync.SyncRoute
@@ -72,27 +75,30 @@ private fun InsigniaAppNav() {
     )
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
+    val showBottomBar = currentRoute in destinations.map { it.route }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
-            NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
-                destinations.forEach { dest ->
-                    NavigationBarItem(
-                        selected = currentRoute == dest.route,
-                        onClick = {
-                            navController.navigate(dest.route) {
-                                popUpTo(navController.graph.findStartDestination().id) {
-                                    saveState = true
+            if (showBottomBar) {
+                NavigationBar(containerColor = MaterialTheme.colorScheme.surface) {
+                    destinations.forEach { dest ->
+                        NavigationBarItem(
+                            selected = currentRoute == dest.route,
+                            onClick = {
+                                navController.navigate(dest.route) {
+                                    popUpTo(navController.graph.findStartDestination().id) {
+                                        saveState = true
+                                    }
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
-                            }
-                        },
-                        icon = { Icon(dest.icon, contentDescription = dest.label) },
-                        label = { Text(dest.label) },
-                    )
+                            },
+                            icon = { Icon(dest.icon, contentDescription = dest.label) },
+                            label = { Text(dest.label) },
+                        )
+                    }
                 }
             }
         },
@@ -103,7 +109,20 @@ private fun InsigniaAppNav() {
             modifier = Modifier.padding(padding),
         ) {
             composable("home") { HomeRoute(onMessage = showMessage) }
-            composable("accounts") { AccountsRoute(onAccountClick = {}) }
+            composable("accounts") {
+                AccountsRoute(
+                    onAccountClick = { id -> navController.navigate("account/$id") },
+                )
+            }
+            composable(
+                route = "account/{accountId}",
+                arguments = listOf(navArgument("accountId") { type = NavType.StringType }),
+            ) {
+                AccountDetailRoute(
+                    onBack = { navController.popBackStack() },
+                    onMessage = showMessage,
+                )
+            }
             composable("transactions") { TransactionsRoute(onMessage = showMessage) }
             composable("sync") { SyncRoute(onMessage = showMessage) }
         }
