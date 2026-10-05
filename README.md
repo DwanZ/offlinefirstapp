@@ -14,7 +14,7 @@ Public portfolio app by [DwanZ](https://github.com/DwanZ): a **financial dashboa
 
 ## Current version
 
-**v0.6.0** — See [CHANGELOG.md](CHANGELOG.md) for the versioned history.
+**v0.6.1** — See [CHANGELOG.md](CHANGELOG.md) for the versioned history.
 
 ## Module map
 
