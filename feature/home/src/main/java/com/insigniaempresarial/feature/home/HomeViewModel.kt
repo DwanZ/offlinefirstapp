@@ -3,6 +3,9 @@ package com.insigniaempresarial.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.insigniaempresarial.core.common.Outcome
+import com.insigniaempresarial.core.common.UserMessageKey
+import com.insigniaempresarial.core.domain.message.ErrorMessageMapper
+import com.insigniaempresarial.core.domain.message.UserMessageMapper
 import com.insigniaempresarial.core.domain.model.HomeSummary
 import com.insigniaempresarial.core.domain.model.SyncHealth
 import com.insigniaempresarial.core.domain.usecase.ObserveHomeSummaryUseCase
@@ -10,6 +13,7 @@ import com.insigniaempresarial.core.domain.usecase.ObserveSyncHealthUseCase
 import com.insigniaempresarial.core.domain.usecase.TriggerSyncUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -36,12 +40,17 @@ class HomeViewModel @Inject constructor(
     observeHomeSummary: ObserveHomeSummaryUseCase,
     observeSyncHealth: ObserveSyncHealthUseCase,
     private val triggerSync: TriggerSyncUseCase,
+    private val errorMessages: ErrorMessageMapper,
+    private val userMessages: UserMessageMapper,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(HomeUiState())
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
-    private val _effects = MutableSharedFlow<HomeUiEffect>()
+    private val _effects = MutableSharedFlow<HomeUiEffect>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
     val effects: SharedFlow<HomeUiEffect> = _effects.asSharedFlow()
 
     init {
@@ -66,8 +75,12 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update { it.copy(isRefreshing = true) }
             when (val result = triggerSync()) {
-                is Outcome.Success -> _effects.emit(HomeUiEffect.Message("Sync completed"))
-                is Outcome.Failure -> _effects.emit(HomeUiEffect.Message(result.error.message))
+                is Outcome.Success -> _effects.emit(
+                    HomeUiEffect.Message(userMessages.map(UserMessageKey.SyncCompleted)),
+                )
+                is Outcome.Failure -> _effects.emit(
+                    HomeUiEffect.Message(errorMessages.map(result.error)),
+                )
             }
             _state.update { it.copy(isRefreshing = false) }
         }

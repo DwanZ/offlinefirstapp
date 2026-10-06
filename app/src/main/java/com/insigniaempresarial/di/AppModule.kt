@@ -48,7 +48,7 @@ object AppModule {
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): InsigniaDatabase =
         Room.databaseBuilder(context, InsigniaDatabase::class.java, "insignia.db")
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(dropAllTables = true)
             .build()
 
     @Provides
@@ -97,6 +97,18 @@ object AppModule {
         api: InsigniaApi,
         syncScheduler: SyncScheduler,
     ): SyncRepository = SyncRepositoryImpl(db, api, syncScheduler)
+
+    @Provides
+    @Singleton
+    fun provideErrorMessageMapper(
+        mapper: com.insigniaempresarial.ui.AndroidErrorMessageMapper,
+    ): com.insigniaempresarial.core.domain.message.ErrorMessageMapper = mapper
+
+    @Provides
+    @Singleton
+    fun provideUserMessageMapper(
+        mapper: com.insigniaempresarial.ui.AndroidUserMessageMapper,
+    ): com.insigniaempresarial.core.domain.message.UserMessageMapper = mapper
 
     @Provides fun provideObserveAccounts(repo: AccountRepository) = ObserveAccountsUseCase(repo)
     @Provides fun provideObserveAccount(repo: AccountRepository) = ObserveAccountUseCase(repo)

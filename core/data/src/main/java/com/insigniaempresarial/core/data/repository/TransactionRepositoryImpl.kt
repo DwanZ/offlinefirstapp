@@ -4,31 +4,17 @@ import androidx.room.withTransaction
 import com.insigniaempresarial.core.common.AppError
 import com.insigniaempresarial.core.common.Outcome
 import com.insigniaempresarial.core.common.SyncStatus
+import com.insigniaempresarial.core.common.ValidationReason
 import com.insigniaempresarial.core.data.mapper.toDomain
 import com.insigniaempresarial.core.data.mapper.toEntity
 import com.insigniaempresarial.core.data.sync.SyncScheduler
 import com.insigniaempresarial.core.database.InsigniaDatabase
 import com.insigniaempresarial.core.database.entity.SyncOutboxEntity
-import com.insigniaempresarial.core.domain.model.Account
 import com.insigniaempresarial.core.domain.model.Transaction
-import com.insigniaempresarial.core.domain.repository.AccountRepository
 import com.insigniaempresarial.core.domain.repository.TransactionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
-
-class AccountRepositoryImpl(
-    private val db: InsigniaDatabase,
-) : AccountRepository {
-    override fun observeAccounts(): Flow<List<Account>> =
-        db.accountDao().observeAll().map { list -> list.map { it.toDomain() } }
-
-    override fun observeAccount(id: String): Flow<Account?> =
-        db.accountDao().observeById(id).map { it?.toDomain() }
-
-    override suspend fun getAccount(id: String): Account? =
-        db.accountDao().getById(id)?.toDomain()
-}
 
 class TransactionRepositoryImpl(
     private val db: InsigniaDatabase,
@@ -54,7 +40,7 @@ class TransactionRepositoryImpl(
         return try {
             val now = System.currentTimeMillis()
             val account = db.accountDao().getById(accountId)
-                ?: return Outcome.Failure(AppError.Validation("Account not found"))
+                ?: return Outcome.Failure(AppError.Validation(ValidationReason.AccountNotFound))
 
             val tx = Transaction(
                 id = UUID.randomUUID().toString(),
@@ -88,7 +74,7 @@ class TransactionRepositoryImpl(
             syncScheduler.enqueueSync()
             Outcome.Success(tx)
         } catch (t: Throwable) {
-            Outcome.Failure(AppError.Database(t.message ?: "Failed to save transaction"))
+            Outcome.Failure(AppError.Database(detail = t.message))
         }
     }
 
@@ -101,9 +87,9 @@ class TransactionRepositoryImpl(
         return try {
             val now = System.currentTimeMillis()
             val from = db.accountDao().getById(fromAccountId)
-                ?: return Outcome.Failure(AppError.Validation("Source account not found"))
+                ?: return Outcome.Failure(AppError.Validation(ValidationReason.SourceAccountNotFound))
             val to = db.accountDao().getById(toAccountId)
-                ?: return Outcome.Failure(AppError.Validation("Destination account not found"))
+                ?: return Outcome.Failure(AppError.Validation(ValidationReason.DestinationAccountNotFound))
 
             val debit = Transaction(
                 id = UUID.randomUUID().toString(),
@@ -161,7 +147,7 @@ class TransactionRepositoryImpl(
             syncScheduler.enqueueSync()
             Outcome.Success(Unit)
         } catch (t: Throwable) {
-            Outcome.Failure(AppError.Database(t.message ?: "Transfer failed"))
+            Outcome.Failure(AppError.Database(detail = t.message))
         }
     }
 

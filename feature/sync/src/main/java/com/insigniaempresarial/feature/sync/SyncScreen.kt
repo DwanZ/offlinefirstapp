@@ -2,6 +2,7 @@ package com.insigniaempresarial.feature.sync
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,13 +15,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.insigniaempresarial.core.designsystem.component.InsigniaPrimaryButton
 import com.insigniaempresarial.core.designsystem.component.MetricCard
 import com.insigniaempresarial.core.designsystem.component.SyncStatusChip
 import com.insigniaempresarial.core.designsystem.component.SyncTone
+import com.insigniaempresarial.core.designsystem.theme.InsigniaTheme
+import com.insigniaempresarial.core.domain.model.SyncHealth
 
 @Composable
 fun SyncRoute(
@@ -51,6 +55,7 @@ fun SyncScreen(
 ) {
     val health = state.health
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = { TopAppBar(title = { Text("Sync health") }) },
         containerColor = MaterialTheme.colorScheme.background,
     ) { padding ->
@@ -90,5 +95,26 @@ fun SyncScreen(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
+    }
+}
+
+@Preview(name = "Sync — Dark", showBackground = true, backgroundColor = 0xFF0F172A)
+@Composable
+private fun SyncScreenPreview() {
+    InsigniaTheme(darkTheme = true) {
+        SyncScreen(
+            state = SyncUiState(
+                health = SyncHealth(
+                    pendingCount = 2,
+                    failedCount = 1,
+                    lastSuccessfulSyncAtEpochMs = 1_727_900_000_000L,
+                    lastError = "mock upstream failure",
+                    isSyncing = false,
+                ),
+                lastSyncLabel = "Oct 3, 2026, 12:00 PM",
+            ),
+            onSyncNow = {},
+            onRetryFailed = {},
+        )
     }
 }

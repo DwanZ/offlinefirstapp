@@ -6,13 +6,10 @@ import android.net.Network
 import android.net.NetworkCapabilities
 import android.net.NetworkRequest
 import com.insigniaempresarial.core.common.ConnectivityObserver
-import com.insigniaempresarial.core.data.sync.SyncScheduler
-import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.channels.awaitClose
 
 class AndroidConnectivityObserver(
     context: Context,
@@ -54,22 +51,5 @@ class AndroidConnectivityObserver(
         val caps = connectivityManager.getNetworkCapabilities(network) ?: return false
         return caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
             caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-    }
-}
-
-class ConnectivitySyncTrigger(
-    private val connectivityObserver: ConnectivityObserver,
-    private val syncScheduler: SyncScheduler,
-) {
-    fun start(scope: CoroutineScope) {
-        scope.launch {
-            var wasOffline = false
-            connectivityObserver.observeIsOnline().collect { online ->
-                if (online && wasOffline) {
-                    syncScheduler.enqueueSync(immediate = true)
-                }
-                wasOffline = !online
-            }
-        }
     }
 }

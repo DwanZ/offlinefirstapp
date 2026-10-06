@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBalance
@@ -77,8 +78,11 @@ private fun InsigniaAppNav() {
     val currentRoute = backStack?.destination?.route
     val showBottomBar = currentRoute in destinations.map { it.route }
 
+    // Zero content insets so feature screens own status-bar handling via TopAppBar.
+    // Applying full Scaffold padding here previously doubled the top inset under edge-to-edge.
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = {
             if (showBottomBar) {

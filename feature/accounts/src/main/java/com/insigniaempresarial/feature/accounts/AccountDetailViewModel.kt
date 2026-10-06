@@ -4,6 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.insigniaempresarial.core.common.Outcome
+import com.insigniaempresarial.core.common.UserMessageKey
+import com.insigniaempresarial.core.domain.message.ErrorMessageMapper
+import com.insigniaempresarial.core.domain.message.UserMessageMapper
 import com.insigniaempresarial.core.domain.model.Account
 import com.insigniaempresarial.core.domain.model.Budget
 import com.insigniaempresarial.core.domain.model.Category
@@ -15,6 +18,7 @@ import com.insigniaempresarial.core.domain.usecase.ObserveTransactionsUseCase
 import com.insigniaempresarial.core.domain.usecase.TransferBetweenAccountsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -46,6 +50,8 @@ class AccountDetailViewModel @Inject constructor(
     observeAccounts: ObserveAccountsUseCase,
     budgetRepository: BudgetRepository,
     private val transfer: TransferBetweenAccountsUseCase,
+    private val errorMessages: ErrorMessageMapper,
+    private val userMessages: UserMessageMapper,
 ) : ViewModel() {
 
     private val accountId: String = checkNotNull(savedStateHandle["accountId"])
@@ -54,7 +60,10 @@ class AccountDetailViewModel @Inject constructor(
     private val _state = MutableStateFlow(AccountDetailUiState())
     val state: StateFlow<AccountDetailUiState> = _state.asStateFlow()
 
-    private val _effects = MutableSharedFlow<AccountDetailEffect>()
+    private val _effects = MutableSharedFlow<AccountDetailEffect>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
     val effects: SharedFlow<AccountDetailEffect> = _effects.asSharedFlow()
 
     init {
@@ -97,9 +106,15 @@ class AccountDetailViewModel @Inject constructor(
             ) {
                 is Outcome.Success -> {
                     showTransfer.value = false
-                    _effects.emit(AccountDetailEffect.Message("Transfer saved offline"))
+                    _effects.emit(
+                        AccountDetailEffect.Message(
+                            userMessages.map(UserMessageKey.TransferSavedOffline),
+                        ),
+                    )
                 }
-                is Outcome.Failure -> _effects.emit(AccountDetailEffect.Message(result.error.message))
+                is Outcome.Failure -> _effects.emit(
+                    AccountDetailEffect.Message(errorMessages.map(result.error)),
+                )
             }
         }
     }

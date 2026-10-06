@@ -4,6 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.insigniaempresarial.core.common.Outcome
 import com.insigniaempresarial.core.common.SyncStatus
+import com.insigniaempresarial.core.common.UserMessageKey
+import com.insigniaempresarial.core.domain.message.ErrorMessageMapper
+import com.insigniaempresarial.core.domain.message.UserMessageMapper
 import com.insigniaempresarial.core.domain.model.Account
 import com.insigniaempresarial.core.domain.model.Transaction
 import com.insigniaempresarial.core.domain.usecase.AddTransactionUseCase
@@ -11,6 +14,7 @@ import com.insigniaempresarial.core.domain.usecase.ObserveAccountsUseCase
 import com.insigniaempresarial.core.domain.usecase.ObserveTransactionsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -18,7 +22,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 enum class TransactionFilter { ALL, PENDING, FAILED }
@@ -40,6 +43,8 @@ class TransactionsViewModel @Inject constructor(
     observeTransactions: ObserveTransactionsUseCase,
     observeAccounts: ObserveAccountsUseCase,
     private val addTransaction: AddTransactionUseCase,
+    private val errorMessages: ErrorMessageMapper,
+    private val userMessages: UserMessageMapper,
 ) : ViewModel() {
 
     private val filter = MutableStateFlow(TransactionFilter.ALL)
@@ -47,7 +52,10 @@ class TransactionsViewModel @Inject constructor(
     private val _state = MutableStateFlow(TransactionsUiState())
     val state: StateFlow<TransactionsUiState> = _state.asStateFlow()
 
-    private val _effects = MutableSharedFlow<TransactionsEffect>()
+    private val _effects = MutableSharedFlow<TransactionsEffect>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
     val effects: SharedFlow<TransactionsEffect> = _effects.asSharedFlow()
 
     init {
@@ -89,9 +97,15 @@ class TransactionsViewModel @Inject constructor(
             when (val result = addTransaction(accountId, amountCents, null, note)) {
                 is Outcome.Success -> {
                     showAdd.value = false
-                    _effects.emit(TransactionsEffect.Message("Saved offline — queued for sync"))
+                    _effects.emit(
+                        TransactionsEffect.Message(
+                            userMessages.map(UserMessageKey.TransactionSavedOffline),
+                        ),
+                    )
                 }
-                is Outcome.Failure -> _effects.emit(TransactionsEffect.Message(result.error.message))
+                is Outcome.Failure -> _effects.emit(
+                    TransactionsEffect.Message(errorMessages.map(result.error)),
+                )
             }
         }
     }

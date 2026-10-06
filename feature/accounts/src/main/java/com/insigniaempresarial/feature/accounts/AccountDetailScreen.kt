@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -13,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
@@ -31,13 +33,21 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.insigniaempresarial.core.common.SyncStatus
 import com.insigniaempresarial.core.designsystem.component.InsigniaPrimaryButton
 import com.insigniaempresarial.core.designsystem.component.MetricCard
 import com.insigniaempresarial.core.designsystem.component.MoneyText
 import com.insigniaempresarial.core.designsystem.component.formatMoney
+import com.insigniaempresarial.core.designsystem.theme.InsigniaTheme
+import com.insigniaempresarial.core.domain.model.Account
+import com.insigniaempresarial.core.domain.model.AccountType
+import com.insigniaempresarial.core.domain.model.Budget
+import com.insigniaempresarial.core.domain.model.Category
+import com.insigniaempresarial.core.domain.model.Transaction
 
 @Composable
 fun AccountDetailRoute(
@@ -71,6 +81,7 @@ fun AccountDetailScreen(
 ) {
     val account = state.account
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text(account?.name ?: "Account") },
@@ -178,7 +189,7 @@ private fun TransferSheet(
                     label = { Text("To account") },
                     trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded) },
                     modifier = Modifier
-                        .menuAnchor()
+                        .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
                         .fillMaxWidth(),
                 )
                 ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
@@ -215,5 +226,51 @@ private fun TransferSheet(
                 enabled = selectedId.isNotBlank() && (amountText.toDoubleOrNull() ?: 0.0) > 0.0,
             )
         }
+    }
+}
+
+@Preview(name = "Account detail — Dark", showBackground = true, backgroundColor = 0xFF0F172A)
+@Composable
+private fun AccountDetailScreenPreview() {
+    InsigniaTheme(darkTheme = true) {
+        AccountDetailScreen(
+            state = AccountDetailUiState(
+                isLoading = false,
+                account = Account(
+                    id = "acc_operating",
+                    name = "Operating Account",
+                    type = AccountType.CHECKING,
+                    currency = "USD",
+                    balanceCents = 1_250_000L,
+                    updatedAtEpochMs = 1L,
+                ),
+                ledger = listOf(
+                    Transaction(
+                        id = "tx_1",
+                        accountId = "acc_operating",
+                        amountCents = -45_000L,
+                        categoryId = "cat_ops",
+                        note = "Office supplies",
+                        bookedAtEpochMs = 1L,
+                        syncStatus = SyncStatus.SYNCED,
+                        clientMutationId = "m1",
+                        updatedAtEpochMs = 1L,
+                    ),
+                ),
+                budgets = listOf(
+                    Budget(
+                        id = "bud_ops",
+                        categoryId = "cat_ops",
+                        limitCents = 200_000L,
+                        periodStartEpochMs = 1L,
+                        periodEndEpochMs = 2L,
+                    ),
+                ),
+                categories = listOf(Category(id = "cat_ops", name = "Operations", iconKey = "build")),
+            ),
+            onBack = {},
+            onShowTransfer = {},
+            onTransfer = { _, _, _ -> },
+        )
     }
 }

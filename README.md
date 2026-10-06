@@ -4,6 +4,21 @@ Public portfolio app by [DwanZ](https://github.com/DwanZ): a **financial dashboa
 
 > Sibling portfolio project: [archMigrationExample](https://github.com/DwanZ/archMigrationExample) (MVP → MVVM → MVI → Compose).
 
+## Demo
+
+| Home | Accounts |
+|---|---|
+| ![Home](docs/screenshots/home.jpg) | ![Accounts](docs/screenshots/accounts.jpg) |
+
+| Transactions | Sync health |
+|---|---|
+| ![Transactions](docs/screenshots/transactions.jpg) | ![Sync](docs/screenshots/sync.jpg) |
+
+- Fully usable offline (Room as SSOT)
+- Local writes enqueue a sync outbox
+- WorkManager push/pull with last-write-wins conflicts
+- Pending / failed sync status visible in the UI
+
 ## Goals
 
 - Modular Clean Architecture (`:core:*`, `:feature:*`)
@@ -15,6 +30,8 @@ Public portfolio app by [DwanZ](https://github.com/DwanZ): a **financial dashboa
 ## Current version
 
 **v0.6.1** — See [CHANGELOG.md](CHANGELOG.md) for the versioned history.
+
+Deep dive: [docs/architecture.md](docs/architecture.md).
 
 ## Module map
 
@@ -30,6 +47,8 @@ Public portfolio app by [DwanZ](https://github.com/DwanZ): a **financial dashboa
 2. Mutations write Room + `sync_outbox` in one `@Transaction`.
 3. WorkManager drains the outbox against a mock Retrofit API.
 4. Pull upserts use last-write-wins by `updatedAt`.
+
+To point at a real backend later, keep the Retrofit interfaces and swap `MockInterceptor` / `baseUrl` in `NetworkFactory` — the Room outbox stays the same.
 
 ## Stack
 
@@ -49,11 +68,13 @@ git clone https://github.com/DwanZ/offlinefirstapp.git
 cd offlinefirstapp
 ```
 
-Open in Android Studio (Gradle JDK 17+ recommended), sync Gradle, run the `app` configuration.
+Open in Android Studio, set **Gradle JDK to 17+** (Android Studio JBR), sync Gradle, run the `app` configuration.
 
 ```bash
 ./gradlew :core:domain:test :feature:home:testDebugUnitTest assembleDebug
 ```
+
+Compose `@Preview` samples live on each feature screen (dark theme) for Studio design tooling.
 
 ## License
 

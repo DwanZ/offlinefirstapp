@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Excess top spacing from nested Scaffold + edge-to-edge (app + feature scaffolds use zero content insets; TopAppBar owns status-bar padding once)
+
+### Added
+- Compose `@Preview` samples for Home, Accounts, Account detail, Transactions, Sync, design system
+- Portfolio screenshots under `docs/screenshots/`
+- Architecture documentation in `docs/architecture.md`
+- Typed `ValidationReason` / `UserMessageKey` with Android string resources (no hardcoded use-case error copy)
+- Expanded unit tests for transfer use case and ViewModel message mapping
+
+### Changed
+- Split grouped use cases, repositories, models, entities, DAOs, DTOs, and design-system components into one type per file
+
 ## [0.6.1] - 2026-10-05
 
 ### Added

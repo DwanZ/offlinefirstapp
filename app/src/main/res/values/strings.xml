@@ -1,3 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Insignia Empresarial</string>
+
+    <!-- Validation -->
+    <string name="error_amount_cannot_be_zero">Amount cannot be zero</string>
+    <string name="error_account_required">Account is required</string>
+    <string name="error_account_not_found">Account not found</string>
+    <string name="error_source_account_not_found">Source account not found</string>
+    <string name="error_destination_account_not_found">Destination account not found</string>
+    <string name="error_transfer_amount_must_be_positive">Transfer amount must be positive</string>
+    <string name="error_accounts_must_differ">Accounts must differ</string>
+
+    <!-- Generic errors -->
+    <string name="error_network">Network error. Check your connection and try again.</string>
+    <string name="error_database">Could not save changes locally.</string>
+    <string name="error_conflict">Data conflict while syncing.</string>
+    <string name="error_unknown">Something went wrong. Please try again.</string>
+
+    <!-- Info / success -->
+    <string name="msg_sync_completed">Sync completed</string>
+    <string name="msg_sync_finished">Sync finished</string>
+    <string name="msg_retry_queued">Retry queued</string>
+    <string name="msg_transaction_saved_offline">Saved offline — queued for sync</string>
+    <string name="msg_transfer_saved_offline">Transfer saved offline</string>
 </resources>

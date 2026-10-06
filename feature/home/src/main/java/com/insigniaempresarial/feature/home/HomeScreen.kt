@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -26,8 +27,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.insigniaempresarial.core.common.SyncStatus
 import com.insigniaempresarial.core.designsystem.component.MetricCard
@@ -35,6 +37,8 @@ import com.insigniaempresarial.core.designsystem.component.MoneyText
 import com.insigniaempresarial.core.designsystem.component.SyncStatusChip
 import com.insigniaempresarial.core.designsystem.component.SyncTone
 import com.insigniaempresarial.core.designsystem.component.formatMoney
+import com.insigniaempresarial.core.designsystem.theme.InsigniaTheme
+import com.insigniaempresarial.core.domain.model.HomeSummary
 import com.insigniaempresarial.core.domain.model.Transaction
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +68,7 @@ fun HomeScreen(
     onRefresh: () -> Unit,
 ) {
     Scaffold(
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
             TopAppBar(
                 title = { Text("Insignia Empresarial") },
@@ -170,3 +175,46 @@ private fun TransactionRow(tx: Transaction) {
         }
     }
 }
+
+@Preview(name = "Home — Dark", showBackground = true, backgroundColor = 0xFF0F172A)
+@Composable
+private fun HomeScreenPreview() {
+    InsigniaTheme(darkTheme = true) {
+        HomeScreen(
+            state = HomeUiState(
+                isLoading = false,
+                summary = HomeSummary(
+                    netWorthCents = 6_085_000L,
+                    currency = "USD",
+                    pendingSyncCount = 2,
+                    recentTransactions = listOf(
+                        Transaction(
+                            id = "1",
+                            accountId = "acc_operating",
+                            amountCents = -45_000L,
+                            categoryId = "cat_ops",
+                            note = "Office supplies",
+                            bookedAtEpochMs = 1_727_810_000_000L,
+                            syncStatus = SyncStatus.SYNCED,
+                            clientMutationId = "seed_1",
+                            updatedAtEpochMs = 1_727_810_000_000L,
+                        ),
+                        Transaction(
+                            id = "2",
+                            accountId = "acc_operating",
+                            amountCents = 320_000L,
+                            categoryId = "cat_revenue",
+                            note = "Client invoice #1042",
+                            bookedAtEpochMs = 1_727_720_000_000L,
+                            syncStatus = SyncStatus.PENDING,
+                            clientMutationId = "seed_2",
+                            updatedAtEpochMs = 1_727_720_000_000L,
+                        ),
+                    ),
+                ),
+            ),
+            onRefresh = {},
+        )
+    }
+}
+

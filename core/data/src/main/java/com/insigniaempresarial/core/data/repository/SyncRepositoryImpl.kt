@@ -11,12 +11,8 @@ import com.insigniaempresarial.core.database.InsigniaDatabase
 import com.insigniaempresarial.core.database.entity.BudgetEntity
 import com.insigniaempresarial.core.database.entity.CategoryEntity
 import com.insigniaempresarial.core.database.entity.SyncMetaEntity
-import com.insigniaempresarial.core.database.entity.TransactionEntity
-import com.insigniaempresarial.core.domain.model.Budget
-import com.insigniaempresarial.core.domain.model.Category
 import com.insigniaempresarial.core.domain.model.HomeSummary
 import com.insigniaempresarial.core.domain.model.SyncHealth
-import com.insigniaempresarial.core.domain.repository.BudgetRepository
 import com.insigniaempresarial.core.domain.repository.SyncRepository
 import com.insigniaempresarial.core.network.api.InsigniaApi
 import com.insigniaempresarial.core.network.dto.UpsertTransactionRequest
@@ -25,18 +21,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import java.io.IOException
-
-class BudgetRepositoryImpl(
-    private val db: InsigniaDatabase,
-) : BudgetRepository {
-    override fun observeCategories(): Flow<List<Category>> =
-        db.categoryDao().observeAll().map { list -> list.map { it.toDomain() } }
-
-    override fun observeBudgets(): Flow<List<Budget>> =
-        db.budgetDao().observeAll().map { list -> list.map { it.toDomain() } }
-}
 
 class SyncRepositoryImpl(
     private val db: InsigniaDatabase,
@@ -107,10 +92,13 @@ class SyncRepositoryImpl(
             lastError.value = null
             Outcome.Success(Unit)
         } catch (t: Throwable) {
-            val message = t.message ?: "Sync failed"
-            lastError.value = message
+            lastError.value = t.message
             Outcome.Failure(
-                if (t is IOException) AppError.Network(message) else AppError.Unknown(message, t),
+                if (t is IOException) {
+                    AppError.Network(detail = t.message)
+                } else {
+                    AppError.Unknown(detail = t.message, cause = t)
+                },
             )
         } finally {
             syncing.value = false
@@ -179,7 +167,7 @@ class SyncRepositoryImpl(
             val payload = payloadAdapter.fromJson(item.payloadJson)
                 ?: run {
                     db.syncOutboxDao().update(
-                        item.copy(attempts = item.attempts + 1, lastError = "Invalid payload"),
+                        item.copy(attempts = item.attempts + 1, lastError = "INVALID_PAYLOAD"),
                     )
                     continue
                 }
@@ -211,12 +199,12 @@ class SyncRepositoryImpl(
                     db.syncOutboxDao().delete(item.id)
                 }
             } catch (t: Throwable) {
-                val message = t.message ?: "Push failed"
+                val detail = t.message ?: t::class.java.simpleName
                 if (local != null) {
                     db.transactionDao().update(local.copy(syncStatus = SyncStatus.FAILED.name))
                 }
                 db.syncOutboxDao().update(
-                    item.copy(attempts = item.attempts + 1, lastError = message),
+                    item.copy(attempts = item.attempts + 1, lastError = detail),
                 )
                 // Non-IO failures stay FAILED; IO bubbles for WorkManager retry
                 if (t is IOException) throw t
